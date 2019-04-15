@@ -18,49 +18,46 @@ def get_current_watchlist():
     # returns user's current watchlist--hard coded for now
     return [ "Star Wars", "Minions", "Freaky Friday", "My Favorite Martian" ]
 
-# TODO: 
-# Modify "My Watchlist" so that you eliminate the need for the "crossoff" form in edit.html. 
-# Now, next to every list item/movie listed in "My Watchlist" you should display a button that says "I Watched it!". 
-# Clicking the button will result in a confirmation message that the movie has been watched. 
-# So you'll need to add a form within the <li> tags of "My Watchlist"
-# Once this is done, delete the "crossoff" form in edit.html
 
-# TODO:
-# Make a ratings.html template which lists all movies that have been crossed off.
-# It should have a header of <h2>Movies I Have Watched</h2>
-# Add a form for rating EACH list item/movie using a <select> dropdown with the options/values
-# in this list: ["How was it?", "*", "**", "***", "****", "*****"]
-# And with a button that says "Rate It!" to submit the user's rating.
-# Give this form the action of "/rating-confirmation" and the method of post.
 
-# TODO: 
-# Add a function, movie_ratings, to handle a get request and render the template at "/ratings"
+def get_watched_movies():
+    return [ "The Matrix", "The Princess Bride", "Buffy the Vampire Slayer" ]
 
-# TODO:
-# Add a function, get_watched_movies, to get the list of crossed off movies. 
-# For now, create a hard-coded list with a few movie titles. 
 
-# TODO:
-# Make a rating-confirmation.html template, to be displayed when the user rates a movie 
-# they have crossed off. 
+@app.route("/rating-confirmation", methods=['POST'])
+def rate_movie():
+    movie = request.form['movie']
+    rating = request.form['rating']
 
-# TODO: 
-# create a rate_movie function that handles a post request on /rating-confirmation and 
-# renders the `rating-confirmation` template.
-
-@app.route("/crossoff", methods=['POST'])
-def crossoff_movie():
-    crossed_off_movie = request.form['crossed-off-movie']
-
-    if crossed_off_movie not in get_current_watchlist():
-        # the user tried to cross off a movie that isn't in their list,
+    if movie not in get_watched_movies():
+        # the user tried to rate a movie that isn't in their list,
         # so we redirect back to the front page and tell them what went wrong
-        error = "'{0}' is not in your Watchlist, so you can't cross it off!".format(crossed_off_movie)
+        error = "'{0}' is not in your Watched Movies list, so you can't rate it, foo!".format(movie)
 
         # redirect to homepage, and include error as a query parameter in the URL
         return redirect("/?error=" + error)
-
+     
     # if we didn't redirect by now, then all is well
+    return render_template('rating-confirmation.html', movie=movie, rating=rating)
+
+# Creates a new route called movie_ratings which handles a GET on /ratings
+@app.route("/ratings", methods=['GET'])
+def movie_ratings():
+    return render_template('ratings.html', movies = get_watched_movies())
+
+@app.route("/crossoff", methods=['POST'])
+def crossed_off_movie():
+    crossed_off_movie = request.form['crossed-off-movie']
+
+    if crossed_off_movie not in get_current_watchlist():
+    # the user tried to cross off a movie that isn't in their list,
+    # so we redirect back to the front page and tell them what went wrong 
+        error ="'{0}', is not in your Watchlist, so you can't cross it off, foo!".format(crossed_off_movie)
+
+    # redirect to homepage, and include error as a query parameter in the URL
+    return redirect ("/?error=" + error)
+
+    #if we didn't redirect you by now, then all is good. 
     return render_template('crossoff.html', crossed_off_movie=crossed_off_movie)
 
 @app.route("/add", methods=['POST'])
